@@ -8,6 +8,7 @@ const candidateRoutes=require('./src/routes/candidate.routes')
 const verifyRoutes =require("./src/routes/verify.routes");
 // const voteRoutes = require('./src/routes/vote.routes');
 // const sendMessage=require('./src/routes/message.routes')
+const Candidate = require('./src/models/candidate.models');
 const cors=require('cors')
 
 const app=express()
@@ -66,21 +67,28 @@ app.get("/user/status", async (req, res) => {
   }
 });
 
+app.get("/api/auth/candidates", async (req, res) => {
+  try {
+    const candidates = await Candidate.find();
+    res.json(candidates);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.get("/api/user/me", async (req, res) => {
   try {
-    // const users = await users.findById(req.user.id);
-    const users = await userModel.findOne();
+    const user = await userModel.findById(req.user.id);
 
-    res.json({
-      username: users.username,
-      email: users.email,
-      isAdmin: users.isAdmin,
-      hasVoted: users.hasVoted,
-      votedParty: users.votedParty
-    });
-
-  } catch (err) {
-    res.status(500).json({ error: err.message,data:user });
+  res.json({
+    username: user.username,
+    email: user.email,
+    isAdmin: user.isAdmin
+  });
+    
+  } catch (error) {
+    console.log(error,"internal server error");
+    
   }
 });
 
