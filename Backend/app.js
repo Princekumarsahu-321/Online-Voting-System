@@ -9,13 +9,21 @@ const verifyRoutes =require("./src/routes/verify.routes");
 // const voteRoutes = require('./src/routes/vote.routes');
 // const sendMessage=require('./src/routes/message.routes')
 const Candidate = require('./src/models/candidate.models');
+const authMiddleware = require("./src/middleware/auth.middleware");
+const cookieParser = require("cookie-parser");
 const cors=require('cors')
 
 const app=express()
 app.use(express.static("public"))
 
-app.use(cors())
+// app.use(cors())
+app.use(cors({
+  origin: "http://localhost:5173", // your frontend
+  credentials: true
+}));
 app.use(express.json())
+app.use(cookieParser());
+
 
 app.use('/api/auth',authRoutes)
 app.use('/api/auth',loginRoutes)
@@ -76,19 +84,23 @@ app.get("/api/auth/candidates", async (req, res) => {
   }
 });
 
-app.get("/api/user/me", async (req, res) => {
+app.get("/api/user/me", authMiddleware, async (req, res) => {
   try {
     const user = await userModel.findById(req.user.id);
 
-  res.json({
-    username: user.username,
-    email: user.email,
-    isAdmin: user.isAdmin
-  });
-    
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.json({
+      username: user.username,
+      email: user.email,
+      isAdmin: user.isAdmin
+    });
+
   } catch (error) {
-    console.log(error,"internal server error");
-    
+    console.log(error, "internal server error");
+    res.status(500).json({ message: "Server error" });
   }
 });
 

@@ -6,7 +6,6 @@ async function loginUser(req, res) {
   try {
     const { email, password } = req.body;
 
-    // 🔍 Check user exists
     const user = await userModel.findOne({ email });
 
     if (!user) {
@@ -15,7 +14,6 @@ async function loginUser(req, res) {
       });
     }
 
-    // 🔐 Compare password
     const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
@@ -24,24 +22,20 @@ async function loginUser(req, res) {
       });
     }
 
-    // 🎟️ Generate JWT token
     const token = jwt.sign(
       { id: user._id, isAdmin: user.isAdmin },
       process.env.JWT_SECRET,
       { expiresIn: "1d" }
     );
 
-    // ✅ Send everything frontend needs
+    // ✅ SEND TOKEN IN COOKIE
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: false, // true in production (https)
+    });
+
     res.status(200).json({
-      message: "User login successfully",
-      // token: token,
-      // user: {
-      //   username: user.username,
-      //   email: user.email,
-      //   isAdmin: user.isAdmin,
-      //   hasVoted: user.hasVoted,
-      //   votedParty: user.votedParty
-      // }
+      message: "User login successfully"
     });
 
   } catch (error) {
