@@ -29,13 +29,13 @@ async function loginUser(req, res) {
     );
 
     // ✅ SEND TOKEN IN COOKIE
-    res.cookie("token", token, {
+    res.cookie("token", token, {  
       httpOnly: true,
       secure: false, // true in production (https)
     });
 
     res.status(200).json({
-      message: "User login successfully"
+      message: "User login successfully"  
     });
 
   } catch (error) {
