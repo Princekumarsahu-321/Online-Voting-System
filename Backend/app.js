@@ -1,43 +1,64 @@
-require('dotenv').config();
-const express=require('express');
-const userModel=require('./src/models/user.models')
-const authRoutes=require('./src/routes/auth.routes')
-const loginRoutes=require('./src/routes/login.routes')
-const logoutRoutes=require('./src/routes/logout.routes')
-const candidateRoutes=require('./src/routes/candidate.routes')
-const verifyRoutes =require("./src/routes/verify.routes");
-// const voteRoutes = require('./src/routes/vote.routes');
-// const sendMessage=require('./src/routes/message.routes')
-const Candidate = require('./src/models/candidate.models');
-const authMiddleware = require("./src/middleware/auth.middleware");
+require("dotenv").config();
+const express = require("express");
+const cors = require("cors");
 const cookieParser = require("cookie-parser");
-const cors=require('cors')
 
-const app=express()
-app.use(express.static("public"))
+// ✅ Models
+const User = require("./src/models/user.models");
+const Candidate = require("./src/models/candidate.models");
 
-// app.use(cors())
+// ✅ Routes
+const authRoutes = require("./src/routes/auth.routes");
+const loginRoutes = require("./src/routes/login.routes");
+const logoutRoutes = require("./src/routes/logout.routes");
+const candidateRoutes = require("./src/routes/candidate.routes");
+const verifyRoutes = require("./src/routes/verify.routes");
+
+// ✅ Middleware
+const authMiddleware = require("./src/middleware/auth");
+
+const app = express();
+
+// ✅ Middlewares
+app.use(express.static("public"));
+
 app.use(cors({
-  origin: "http://localhost:5173", // your frontend
+  origin: "http://localhost:5173",
   credentials: true
 }));
-app.use(express.json())
+
+app.use(express.json());
 app.use(cookieParser());
 
+// ✅ Routes
+app.use("/api/auth", authRoutes);
+app.use("/api/auth", loginRoutes);
+app.use("/api/auth", logoutRoutes);
+app.use("/api/auth", candidateRoutes);
+app.use("/api/auth", verifyRoutes);
 
-app.use('/api/auth',authRoutes)
-app.use('/api/auth',loginRoutes)
-app.use('/api/auth', logoutRoutes)
-app.use('/api/auth', candidateRoutes)
-app.use('/api/auth', verifyRoutes)
-// app.use('/api/auth', voteRoutes);
-// app.use('/api/auth', sendMessage);
+// ================== PROFILE ==================
+app.get("/api/auth/profile", authMiddleware, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select("-password");
 
-app.post("/api/vote", async (req, res) => {
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.json(user);
+  } catch (error) {
+    console.log("PROFILE ERROR:", error);
+    res.status(500).json({ message: "Error fetching profile" });
+  }
+});
+
+// ================== VOTE ==================
+app.post("/api/vote", authMiddleware, async (req, res) => {
   try {
     const { party } = req.body;
 
-    const user = await userModel.findById(req.user.id);
+    const user = await User.findById(req.user.id);
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
@@ -61,9 +82,10 @@ app.post("/api/vote", async (req, res) => {
   }
 });
 
-app.get("/user/status", async (req, res) => {
+// ================== USER STATUS ==================
+app.get("/api/user/status", authMiddleware, async (req, res) => {
   try {
-    const user = await User.findById(req.user.id); 
+    const user = await User.findById(req.user.id);
 
     res.json({
       hasVoted: user.hasVoted,
@@ -75,6 +97,7 @@ app.get("/user/status", async (req, res) => {
   }
 });
 
+// ================== CANDIDATES ==================
 app.get("/api/auth/candidates", async (req, res) => {
   try {
     const candidates = await Candidate.find();
@@ -84,9 +107,10 @@ app.get("/api/auth/candidates", async (req, res) => {
   }
 });
 
+// ================== CURRENT USER ==================
 app.get("/api/user/me", authMiddleware, async (req, res) => {
   try {
-    const user = await userModel.findById(req.user.id);
+    const user = await User.findById(req.user.id);
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
@@ -99,15 +123,19 @@ app.get("/api/user/me", authMiddleware, async (req, res) => {
     });
 
   } catch (error) {
-    console.log(error, "internal server error");
+    console.log(error);
     res.status(500).json({ message: "Server error" });
   }
 });
 
-
-app.get('/admin', async (req, res) => {
+// ================== ADMIN ==================
+app.get("/admin", async (req, res) => {
   try {
-    const users = await userModel.find();
+    // if (!req.user.isAdmin) {
+    //   return res.status(403).json({ message: "Access denied" });
+    // }
+
+    const users = await User.find();
 
     res.status(200).json({
       message: "All users fetched successfully",
@@ -121,33 +149,14 @@ app.get('/admin', async (req, res) => {
   }
 });
 
-app.post("/api/:contact", (req, res) => {
-  
+// ================== CONTACT ==================
+app.post("/api/contact", (req, res) => {
   try {
     console.log(req.body);
-    res.status(200).json({ message: "Message send" });
-
-
+    res.status(200).json({ message: "Message sent" });
   } catch (error) {
-    res.status(500).json({
-      message: "Internal server error"
-    });
+    res.status(500).json({ message: "Internal server error" });
   }
 });
 
-app.get("/admin/:contact", (req, res) => {
-  
-  try {
-    console.log(req.body);
-    res.status(200).json({ message: "Message received" });
-
-
-  } catch (error) {
-    res.status(500).json({
-      message: "Internal server error"
-    });
-  }
-});
-
-
-module.exports=app 
+module.exports = app;

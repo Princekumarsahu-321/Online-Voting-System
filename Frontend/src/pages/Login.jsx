@@ -1,67 +1,85 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from 'axios';
+import axios from "axios";
 
 function Login() {
-  const [formData, setFormData] = useState({  
+  const navigate = useNavigate();
+
+  const [formData, setFormData] = useState({
     email: "",
     password: ""
   });
 
-  
+  const [loading, setLoading] = useState(false); // 🔥 NEW
 
-  // handle input changes
+  // handle input change
   const handleChange = (e) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value 
+      [e.target.name]: e.target.value
     });
-  }; 
+  };
 
   // handle login
-  
+  const handleLogin = async (e) => {
+    e.preventDefault();
 
-const navigate = useNavigate();
-
-const handleLogin = async (e) => {
-  e.preventDefault();
-
-  try {
-    const res = await axios.post(
-      "http://localhost:3000/api/auth/login",
-      formData,{
-        withCredentials: true
-      }
-       
-    );
-
-    alert("Login successful");
-    navigate("/Dashboard");
-
-    if (res.data.token) {
-      localStorage.setItem("token", res.data.token);
-  
-      // 🚀 redirect
-      
+    if (!formData.email || !formData.password) {
+      alert("Please fill all fields");
+      return;
     }
 
-  } catch (error) {
-    console.log(error.response?.data || error);
-    alert("Login failed");
-  }
-};
+    try {
+      setLoading(true);
+
+      const res = await axios.post(
+        "http://localhost:3000/api/auth/login",
+        formData,
+        { withCredentials: true }
+      );
+
+      console.log("LOGIN RESPONSE:", res.data);
+
+      // 🔐 store token
+      if (res.data.token) {
+        localStorage.setItem("token", res.data.token);
+      }
+
+      // 🔥 OPTIONAL: store user data (faster UI)
+      if (res.data.user) {
+        localStorage.setItem("user", JSON.stringify(res.data.user));
+      }
+
+      alert("Login successful 🎉");
+
+      navigate("/Dashboard");
+
+    } catch (error) {
+      console.log("LOGIN ERROR:", error.response?.data || error);
+
+      alert(
+        error.response?.data?.message || "Login failed ❌"
+      );
+
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100">
-      <form 
+      <form
         onSubmit={handleLogin}
         className="bg-white p-8 rounded shadow-md space-y-4 w-full max-w-md"
       >
-        <h2 className="text-2xl font-bold text-center mb-4">Login</h2>
+        <h2 className="text-2xl font-bold text-center mb-4">
+          Login 🔐
+        </h2>
 
+        {/* Email */}
         <div>
           <label className="block mb-1">Email:</label>
-          <input 
+          <input
             type="email"
             name="email"
             value={formData.email}
@@ -72,9 +90,10 @@ const handleLogin = async (e) => {
           />
         </div>
 
+        {/* Password */}
         <div>
           <label className="block mb-1">Password:</label>
-          <input 
+          <input
             type="password"
             name="password"
             value={formData.password}
@@ -85,13 +104,18 @@ const handleLogin = async (e) => {
           />
         </div>
 
-        <button 
+        {/* Button */}
+        <button
           type="submit"
-          className="bg-green-400 text-white px-4 py-2 rounded w-full hover:bg-green-500 transition"
+          disabled={loading}
+          className={`px-4 py-2 rounded w-full text-white transition ${
+            loading
+              ? "bg-gray-400 cursor-not-allowed"
+              : "bg-green-500 hover:bg-green-600"
+          }`}
         >
-          Login
+          {loading ? "Logging in..." : "Login"}
         </button>
-
       </form>
     </div>
   );
