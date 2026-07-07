@@ -140,8 +140,6 @@ npm run dev
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
 
 ---
-
-
 ## 🌟 Acknowledgement
 
 Built for hackathon and learning purposes 🚀
