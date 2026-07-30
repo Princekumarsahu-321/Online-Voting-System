@@ -14,8 +14,6 @@ A secure and user-friendly **Online Voting System** built using the MERN stack (
 * 🌐 REST API Integration
 * 📩 Contact Form Support
 
----
-
 ## 🛠️ Tech Stack
 
 **Frontend:**
