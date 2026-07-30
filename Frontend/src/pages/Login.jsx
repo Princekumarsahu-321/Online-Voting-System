@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
@@ -7,20 +7,78 @@ function Login() {
 
   const [formData, setFormData] = useState({
     email: "",
-    password: ""
+    password: "",
   });
 
-  const [loading, setLoading] = useState(false); // 🔥 NEW
+  const [loading, setLoading] = useState(false);
 
-  // handle input change
+  // ---------------- GOOGLE LOGIN ----------------
+  useEffect(() => {
+    if (!window.google) return;
+
+    window.google.accounts.id.initialize({
+      client_id:
+        "47850225611-mgaf0pvnvi15e981pk6docgh09p4ee8h.apps.googleusercontent.com",
+      callback: handleCredentialLogin,
+    });
+
+    window.google.accounts.id.renderButton(
+      document.getElementById("googleSignInDiv"),
+      {
+        theme: "outline",
+        size: "large",
+        width: 300,
+      }
+    );
+  }, []);
+
+  const handleCredentialLogin = async (response) => {
+    try {
+      const res = await axios.post(
+        "http://localhost:3000/api/auth/google",
+        {
+          credential: response.credential,
+        },
+        {
+          withCredentials: true,
+        }
+      );
+
+      console.log(res.data);
+
+      if (res.data.token) {
+        localStorage.setItem("token", res.data.token);
+      }
+
+      if (res.data.user) {
+        localStorage.setItem(
+          "user",
+          JSON.stringify(res.data.user)
+        );
+      }
+
+      alert("Google Login Successful ");
+
+      navigate("/Dashboard");
+    } catch (error) {
+      console.log(error);
+
+      alert(
+        error.response?.data?.message ||
+          "Google Login Failed"
+      );
+    }
+  };
+
+  // ---------------- INPUT ----------------
   const handleChange = (e) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     });
   };
 
-  // handle login
+  // ---------------- EMAIL LOGIN ----------------
   const handleLogin = async (e) => {
     e.preventDefault();
 
@@ -35,32 +93,32 @@ function Login() {
       const res = await axios.post(
         "http://localhost:3000/api/auth/login",
         formData,
-        { withCredentials: true }
+        {
+          withCredentials: true,
+        }
       );
 
-      console.log("LOGIN RESPONSE:", res.data);
-
-      // 🔐 store token
       if (res.data.token) {
         localStorage.setItem("token", res.data.token);
       }
 
-      // 🔥 OPTIONAL: store user data (faster UI)
       if (res.data.user) {
-        localStorage.setItem("user", JSON.stringify(res.data.user));
+        localStorage.setItem(
+          "user",
+          JSON.stringify(res.data.user)
+        );
       }
 
-      alert("Login successful 🎉");
+      alert("Login Successful ");
 
       navigate("/Dashboard");
-
     } catch (error) {
-      console.log("LOGIN ERROR:", error.response?.data || error);
+      console.log(error);
 
       alert(
-        error.response?.data?.message || "Login failed ❌"
+        error.response?.data?.message ||
+          "Login Failed"
       );
-
     } finally {
       setLoading(false);
     }
@@ -70,45 +128,40 @@ function Login() {
     <div className="flex justify-center items-center min-h-screen bg-gray-100">
       <form
         onSubmit={handleLogin}
-        className="bg-white p-8 rounded shadow-md space-y-4 w-full max-w-md"
+        className="bg-white p-8 rounded-lg shadow-md w-full max-w-md space-y-4"
       >
-        <h2 className="text-2xl font-bold text-center mb-4">
+        <h2 className="text-3xl font-bold text-center">
           Login 🔐
         </h2>
 
-        {/* Email */}
         <div>
-          <label className="block mb-1">Email:</label>
+          <label>Email</label>
           <input
             type="email"
             name="email"
+            placeholder="Enter email"
             value={formData.email}
             onChange={handleChange}
-            className="border p-2 w-full rounded"
-            placeholder="Enter your email"
-            required
+            className="border p-2 rounded w-full"
           />
         </div>
 
-        {/* Password */}
         <div>
-          <label className="block mb-1">Password:</label>
+          <label>Password</label>
           <input
             type="password"
             name="password"
+            placeholder="Enter password"
             value={formData.password}
             onChange={handleChange}
-            className="border p-2 w-full rounded"
-            placeholder="Enter your password"
-            required
+            className="border p-2 rounded w-full"
           />
         </div>
 
-        {/* Button */}
         <button
           type="submit"
           disabled={loading}
-          className={`px-4 py-2 rounded w-full text-white transition ${
+          className={`w-full py-2 rounded text-white ${
             loading
               ? "bg-gray-400 cursor-not-allowed"
               : "bg-green-500 hover:bg-green-600"
@@ -116,6 +169,26 @@ function Login() {
         >
           {loading ? "Logging in..." : "Login"}
         </button>
+
+        <div className="flex items-center my-2">
+          <hr className="flex-1" />
+          <span className="mx-2 text-gray-500">OR</span>
+          <hr className="flex-1" />
+        </div>
+
+        <div className="flex justify-center">
+          <div id="googleSignInDiv"></div>
+        </div>
+
+        <p className="text-center text-sm">
+          Don't have an account?{" "}
+          <span
+            onClick={() => navigate("/signup")}
+            className="text-blue-500 cursor-pointer hover:underline"
+          >
+            Signup
+          </span>
+        </p>
       </form>
     </div>
   );

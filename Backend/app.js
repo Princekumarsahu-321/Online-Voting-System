@@ -13,6 +13,7 @@ const loginRoutes = require("./src/routes/login.routes");
 const logoutRoutes = require("./src/routes/logout.routes");
 const candidateRoutes = require("./src/routes/candidate.routes");
 const verifyRoutes = require("./src/routes/verify.routes");
+const googleRoutes = require("./src/routes/google.routes");
 
 // ✅ Middleware
 const authMiddleware = require("./src/middleware/auth");
@@ -22,10 +23,12 @@ const app = express();
 // ✅ Middlewares
 app.use(express.static("public"));
 
-app.use(cors({
-  origin: "http://localhost:5173",
-  credentials: true
-}));
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+  }),
+);
 
 app.use(express.json());
 app.use(cookieParser());
@@ -36,20 +39,26 @@ app.use("/api/auth", loginRoutes);
 app.use("/api/auth", logoutRoutes);
 app.use("/api/auth", candidateRoutes);
 app.use("/api/auth", verifyRoutes);
+app.use("/api/auth", googleRoutes);
 
 // ================== PROFILE ==================
 app.get("/api/auth/profile", authMiddleware, async (req, res) => {
   try {
-    const user = await User.findById(req.user.id).select("-password");
+    const user = await User.findById(req.user.id).select("username -_id");
 
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      return res.status(404).json({
+        message: "User not found",
+      });
     }
 
-    res.json(user);
+    res.status(200).json(user);
   } catch (error) {
     console.log("PROFILE ERROR:", error);
-    res.status(500).json({ message: "Error fetching profile" });
+
+    res.status(500).json({
+      message: "Error fetching profile",
+    });
   }
 });
 
@@ -76,7 +85,6 @@ app.post("/api/vote", authMiddleware, async (req, res) => {
     await user.save();
 
     res.json({ message: `Voted for ${party} successfully` });
-
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -87,13 +95,23 @@ app.get("/api/user/status", authMiddleware, async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
 
-    res.json({
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found",
+      });
+    }
+
+    res.status(200).json({
       hasVoted: user.hasVoted,
       votedParty: user.votedParty,
+      isAdmin: user.isAdmin,
     });
-
   } catch (error) {
-    res.status(500).json({ message: "Error fetching status" });
+    console.log(error);
+
+    res.status(500).json({
+      message: "Error fetching status",
+    });
   }
 });
 
@@ -119,9 +137,8 @@ app.get("/api/user/me", authMiddleware, async (req, res) => {
     res.json({
       username: user.username,
       email: user.email,
-      isAdmin: user.isAdmin
+      isAdmin: user.isAdmin,
     });
-
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: "Server error" });
@@ -139,12 +156,11 @@ app.get("/admin", async (req, res) => {
 
     res.status(200).json({
       message: "All users fetched successfully",
-      data: users
+      data: users,
     });
-
   } catch (error) {
     res.status(500).json({
-      message: "Internal server error"
+      message: "Internal server error",
     });
   }
 });

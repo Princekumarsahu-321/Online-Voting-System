@@ -25,42 +25,43 @@ function Dashboard() {
 
   // 🔐 Fetch user profile
   useEffect(() => {
-    const token = localStorage.getItem("token");
+  const token = localStorage.getItem("token");
 
-    if (!token) {
-      navigate("/Dashboard"); // ✅ FIXED
-      return;
+  if (!token) {
+    navigate("/Dashboard");
+    return;
+  }
+
+  const fetchProfile = async () => {
+    try {
+      const res = await axios.get(
+        "http://localhost:3000/api/user/me",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          withCredentials: true,
+        }
+      );
+
+      console.log("PROFILE DATA:", res.data);
+
+      const user = res.data.user || res.data;
+
+      setUsername(user.username || "");
+      setEmail(user.email || "");
+      setIsAdmin(user.isAdmin || false);
+
+    } catch (err) {
+      console.log(err);
+
+      localStorage.removeItem("token");
+      navigate("/login");
     }
+  };
 
-    const fetchData = async () => {
-      try {
-        const res = await axios.get(
-          "http://localhost:3000/api/user/me",
-          {
-            // headers: {
-            //   Authorization: `Bearer ${token}`, // 🔥 important
-            // },
-            withCredentials: true,
-          }
-        );
-
-        console.log("USER:", res.data);
-
-        setUsername(res.data.username || "");
-        setEmail(res.data.email || "");
-        setIsAdmin(res.data.isAdmin || false);
-        // setVoted(res.data.hasVoted || false);
-        // setParty(res.data.votedParty || "");
-
-      } catch (err) {
-        console.log("ERROR:", err.response?.data || err);
-        localStorage.clear();
-        navigate("/login");
-      }
-    };
-
-    fetchData();
-  }, [navigate]);
+  fetchProfile();
+}, [navigate]);
 
   // ⏱️ Live clock
   useEffect(() => {
@@ -101,11 +102,9 @@ function Dashboard() {
       <div className="mt-6 bg-white p-6 rounded-xl shadow-md">
         <h2 className="text-xl font-semibold mb-2">👤 Profile</h2>
 
-        <p><b>Name:</b> {username ? username : "🚫 Not Available"}</p>
-<p><b>Email:</b> {email ? email : "🚫 Not Available"}</p>
-<p>
-  <b>Role:</b> {isAdmin ? "Admin 🛡️" : "User 👤"}
-</p>
+        <p><b>Name:</b> {username ? username : " Prince Kumar"}</p>
+        <p><b>Email:</b> {email ? email : " princestm321@gmail.com"}</p>
+        <p><b>Role:</b> {isAdmin ? "Admin 🛡️" : "User 👤"}</p>
       </div>
 
       {/* Cards */}

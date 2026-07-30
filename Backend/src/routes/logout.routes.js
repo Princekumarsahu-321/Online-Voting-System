@@ -1,8 +1,9 @@
-const express=require('express')
-const logoutControoler=require('../controllers/logout.controller')
-const router=express.Router()
+const express = require("express");
+const router = express.Router();
 
-router.delete('/user/:id', logoutControoler.deleteUser)
+const authMiddleware = require("../middleware/auth");
+const { logoutUser } = require("../controllers/logout.controller");
 
+router.post("/logout", authMiddleware, logoutUser);
 
-module.exports=router
+module.exports = router;

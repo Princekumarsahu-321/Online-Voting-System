@@ -1,9 +1,33 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
+import { createChat } from "@n8n/chat";
+import "@n8n/chat/style.css";
 
 function Home() {
+  useEffect(() => {
+    createChat({
+      webhookUrl:
+        "https://nodejs123.app.n8n.cloud/webhook/75a3f276-49bb-46a8-b27f-7967c41c4b4d/chat",
+      mode: "window",
+      initialMessages: [
+        "👋 Welcome to the Online Voting System!",
+        "How can I help you today?",
+      ],
+      i18n: {
+        en: {
+          title: "Election Assistant",
+          subtitle: "Ask anything about voting",
+          footer: "",
+          getStarted: "Start Chat",
+          inputPlaceholder: "Type your message...",
+        },
+      },
+    });
+  }, []);
+
   return (
     <div className="bg-gray-100 min-h-screen">
+      {/* Your existing JSX remains exactly the same */}
       {/* 🔷 Navbar */}
       <nav className="bg-white shadow-md px-8 py-4 flex justify-between items-center">
         <h1 className="text-xl font-bold text-blue-900">Election System</h1>
@@ -100,6 +124,10 @@ function Home() {
           <h2 className="mt-4 font-semibold">What's on Ballot</h2>
         </div>
 
+        {/* chat--Bot */}
+        
+        
+
         <Link to="/Verify">
           <div className="bg-white p-6 rounded-xl shadow-md text-center hover:shadow-xl transition cursor-pointer hover:text-green-400">
             <img
@@ -112,7 +140,8 @@ function Home() {
           </div>
         </Link>
 
-        <div className="bg-white p-6 rounded-xl shadow-md text-center hover:shadow-xl transition">
+        <Link to="/Admin">
+        <div className="bg-white p-6 rounded-xl shadow-md text-center hover:shadow-xl transition cursor-pointer hover:text-green-400">
           <img
             src="https://cdn-icons-png.flaticon.com/512/190/190411.png"
             alt=""
@@ -120,6 +149,7 @@ function Home() {
           />
           <h2 className="mt-4 font-semibold">Become Volunteer</h2>
         </div>
+         </Link >
 
         <div className="bg-white p-6 rounded-xl shadow-md text-center hover:shadow-xl transition">
           <img
