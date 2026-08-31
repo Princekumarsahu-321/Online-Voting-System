@@ -4,6 +4,7 @@ A secure and user-friendly **Online Voting System** built using the MERN stack (
 
 ---
 
+
 ## 🚀 Features
 
 * 🔐 User Authentication (Signup/Login with JWT)
