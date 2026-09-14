@@ -4,6 +4,7 @@ A secure and user-friendly **Online Voting System** built using the MERN stack (
 
 ---
 
+
 ## 🚀 Features
 
 * 🔐 User Authentication (Signup/Login with JWT)
@@ -13,8 +14,6 @@ A secure and user-friendly **Online Voting System** built using the MERN stack (
 * ⚡ Fast and Responsive UI (React + Tailwind CSS)
 * 🌐 REST API Integration
 * 📩 Contact Form Support
-
----
 
 ## 🛠️ Tech Stack
 
@@ -134,6 +133,7 @@ npm run dev
 * 🧠 Voting Key
 
 ---
+
 
 ## 🤝 Contribution
 
