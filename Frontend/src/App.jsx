@@ -5,7 +5,7 @@ import About from "./pages/About";
 import Home from "./pages/Home";
 import Contact from "./pages/Contact";
 import Login from "./pages/Login";
-import Signup from "./pages/signup";
+import Signup from "./pages/Signup";
 
 import Result from "./page/Result";
 import Admin from "./page/Admin";
@@ -13,7 +13,7 @@ import Help from "./page/Help";
 import Voting from "./page/Voting";
 import Verify from "./page/Verify";
 import Dashboard from "./page/Dashboard";
-import AdminLogin from "./page/adminlogin";
+import AdminLogin from "./page/AdminLogin";
 // import CastYourVote from './page/CastYourVote'
 
 import Header from "./assets/components/Header";
