@@ -1,4 +1,5 @@
-name: ci Pipeline
+name: CI Pipeline
+
 on:
   push:
     branches: [main]
@@ -7,7 +8,7 @@ on:
     branches: [main]
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
 
     steps:
@@ -16,7 +17,6 @@ jobs:
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
-        
         with:
           node-version: '20'
 
